@@ -5,7 +5,6 @@ import cv2
 import time
 import threading
 from fingerscanner_working import calculate
-import RPi.GPIO as gpio
 import os
 import imutils
 from imutils.video import VideoStream
@@ -125,7 +124,6 @@ class Startpage:
         self.btnQuitPreview.place()
 
     def videoLoop(self):
-
         currentFrame = None
         panel = None
 
@@ -154,7 +152,6 @@ class Startpage:
         panel.place_forget()
         panel.pack_forget()
 
-
         self.previewFrame.place_forget()
         self.previewFrame.pack_forget()
         vs.stop()
@@ -163,16 +160,19 @@ class Startpage:
         self.resultframe.place(x=btnwidth, relheight=1.0,width=480-btnwidth)
     
     def closeProgram(self):
-
         top = tk.Toplevel()
+        top.resizable(0,0)
         top.title('Shutdown')
         top.geometry('%dx%d+%d+%d' % (300, 100, 110, 90))
         shutdownBtn = tk.Button(top,text='Shutdown', command=self.shutdown)
         shutdownBtn.pack()
-        shutdownBtn.place(relheight=0.5, width=100, x=25, y=25)
+        shutdownBtn.place(relheight=0.5, width=66, x=25, y=25)
         rebootBtn = tk.Button(top,text='Reboot', command=self.reboot)
         rebootBtn.pack()
-        rebootBtn.place(relheight=0.5, width=100, x=175, y=25)
+        rebootBtn.place(relheight=0.5, width=66, x=117, y=25)
+        cancelBtn = tk.Button(top,text='Cancel', command=top.destroy)
+        cancelBtn.pack()
+        cancelBtn.place(relheight=0.5, width=66, x=209, y=25)
 
     def calculateRatio(self):
         if self.stopEvent is not None:
@@ -189,7 +189,7 @@ class Startpage:
         fingertipVector = list(tuple(np.subtract(fingertipCoordinates,nailbedCoordinates)))
         lengthFingertipVector = sum(map(abs,fingertipVector))
 
-        angle = np.degrees(np.arccos(np.dot([x/lengthJointVector for x in jointVector],[x/lengthFingertipVector for x in fingertipVector])))
+        angle = 360 - np.degrees(np.arccos(np.dot([x/lengthJointVector for x in jointVector],[x/lengthFingertipVector for x in fingertipVector])))
 
         self.anglelabel["text"] = angle
         self.ratiolabel["text"] = ratio
@@ -200,15 +200,12 @@ class Startpage:
     def reboot(self):
         os.system('sudo reboot')
 
-        
     def quitPreview(self):
         self.stopEvent.set()
         self.btnQuitPreview.place_forget()
         self.btnQuitPreview.pack_forget()
         self.btn.pack()
         self.btn.place()
-        
-
 
 if __name__ == "__main__":
 
