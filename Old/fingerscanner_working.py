@@ -11,7 +11,7 @@ def workerProcess(inputImage,fingertipModel,nailbedModel,jointModel):
     surf.setHessianThreshold(400)
     surf.setExtended(True)
     bf = cv2.BFMatcher() 
-    sfsd
+
     imgbw = np.zeros((640,480),dtype=np.uint8)
     fingertipmask = np.zeros((480,190),dtype=np.uint8)
     nailbedmask = np.zeros((480,150),dtype=np.uint8)
