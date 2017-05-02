@@ -108,9 +108,6 @@ class Startpage:
         self.powerbutton.pack()
         self.powerbutton.place(y=2*screenheight/3)
 
-        # self.btnQuitPreview = tk.Button(self.btnFrame, height=btnheight, width=btnwidth, text="Quit preview",
-        #                                 command=lambda: Startpage.quitPreview(self))
-
         # Create the resultframe inside the backgroundframe and set its color to green for testing purposes
         self.resultframe = tk.Frame(root, bg="green")
         self.resultframe.pack(in_=Startpage.frame)
@@ -180,12 +177,8 @@ class Startpage:
         panel.place_forget()
         panel.pack_forget()
 
-        # self.previewFrame.place_forget()
-        # self.previewFrame.pack_forget()
         vs.stop()
 
-        # self.resultframe.pack(in_=Startpage.frame)
-        # self.resultframe.place(x=btnwidth, relheight=1.0, width=480 - btnwidth)
 
     def closeProgram(self):
         top = tk.Toplevel()
@@ -230,13 +223,6 @@ class Startpage:
     @staticmethod
     def reboot():
         os.system('sudo reboot')
-
-    # def quitPreview(self):
-        # self.stopEvent.set()
-        # self.btnQuitPreview.place_forget()
-        # self.btnQuitPreview.pack_forget()
-        # self.photobutton.pack()
-        # self.photobutton.place()
 
 
 if __name__ == "__main__":
