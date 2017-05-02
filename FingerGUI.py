@@ -45,6 +45,8 @@ class Startpage:
     previewFrame = None
     btnFrame = None
 
+    image = None
+
     photobutton = None
     calculatebutton = None
     powerbutton = None
@@ -78,7 +80,7 @@ class Startpage:
         icon = ImageTk.PhotoImage(file="icons/camera.png")
         self.photobutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
-                                command=lambda: Startpage.previewCamera(self),
+                                command=lambda: Startpage.takePicture(self),
                                 highlightthickness=0, bd=0)
         self.photobutton.image = icon
         self.photobutton.pack()
@@ -140,24 +142,14 @@ class Startpage:
         self.thread = threading.Thread(target=self.videoLoop)
         self.thread.start()
 
-    def previewCamera(self):
+    def takePicture(self):
+        if self.stopEvent is not None:
+            self.stopEvent.set()
 
-        self.resultframe.place_forget()
-        self.resultframe.pack_forget()
-
-        self.previewFrame = tk.Frame(root, bg="green")
-        self.previewFrame.pack(in_=Startpage.frame)
-        self.previewFrame.place(x=btnwidth, height=screenheight, width=screenwidth - btnwidth)
-
-        self.stopEvent = threading.Event()
-        self.thread = threading.Thread(target=self.videoLoop)
-        self.thread.start()
-
-        # self.photobutton.place_forget()
-        # self.photobutton.pack_forget()
-
-        # self.btnQuitPreview.pack()
-        # self.btnQuitPreview.place(y=0)
+        imagelabel = tk.Label(self.previewFrame, image=self.image)
+        imagelabel.image = self.image
+        imagelabel.pack(in_=self.previewFrame)
+        imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
 
     def videoLoop(self):
 
@@ -171,16 +163,16 @@ class Startpage:
                     currentFrame = imutils.resize(currentFrame, width=screenwidth - btnwidth)
                     image = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
                     image = Image.fromarray(image)
-                    image = ImageTk.PhotoImage(image)
+                    self.image = ImageTk.PhotoImage(image)
 
                     if panel is None:
-                        panel = tk.Label(self.previewFrame, image=image)
-                        panel.image = image
+                        panel = tk.Label(self.previewFrame, image=self.image)
+                        panel.image = self.image
                         panel.pack(in_=self.previewFrame)
                         panel.place(width=screenwidth-btnwidth, height=screenheight)
                     else:
-                        panel.configure(image=image)
-                        panel.image = image
+                        panel.configure(image=self.image)
+                        panel.image = self.image
 
         except RuntimeError:
             print("RuntimeError")
@@ -188,12 +180,12 @@ class Startpage:
         panel.place_forget()
         panel.pack_forget()
 
-        self.previewFrame.place_forget()
-        self.previewFrame.pack_forget()
+        # self.previewFrame.place_forget()
+        # self.previewFrame.pack_forget()
         vs.stop()
 
-        self.resultframe.pack(in_=Startpage.frame)
-        self.resultframe.place(x=btnwidth, relheight=1.0, width=480 - btnwidth)
+        # self.resultframe.pack(in_=Startpage.frame)
+        # self.resultframe.place(x=btnwidth, relheight=1.0, width=480 - btnwidth)
 
     def closeProgram(self):
         top = tk.Toplevel()
