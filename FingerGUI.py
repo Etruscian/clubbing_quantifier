@@ -11,7 +11,7 @@ from imutils.video import VideoStream
 
 # from Old.fingerscanner_working import calculate
 
-screenwidth = 600
+screenwidth = 800
 screenheight = 480
 
 # Declare button dimensions
@@ -115,22 +115,30 @@ class Startpage:
         self.resultframe.place(x=btnwidth, height=screenheight, width=screenwidth - btnwidth)
 
         ratioframe = tk.Frame(self.resultframe, bg="red")
-        ratioframe.pack(in_=self.resultframe)
-        ratioframe.place(height=0.5*screenheight, width=screenwidth-btnwidth)
+        # ratioframe.pack(in_=self.resultframe)
+        # ratioframe.place(height=0.5*screenheight, width=screenwidth-btnwidth)
 
         angleframe = tk.Frame(self.resultframe, bg="blue")
-        angleframe.pack(in_=self.resultframe)
-        angleframe.place(y=0.5*screenheight, height=0.5*screenheight, width=screenwidth-btnwidth)
+        # angleframe.pack(in_=self.resultframe)
+        # angleframe.place(y=0.5*screenheight, height=0.5*screenheight, width=screenwidth-btnwidth)
 
         # Create result label and place it in the ratio frame
         self.ratiolabel = tk.Label(ratioframe, text="Ratio")
-        self.ratiolabel.pack()
-        self.ratiolabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        # self.ratiolabel.pack()
+        # self.ratiolabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
 
         # Create calculating label and place it in the resultframe
         self.anglelabel = tk.Label(angleframe, text="Angle")
-        self.anglelabel.pack()
-        self.anglelabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        # self.anglelabel.pack()
+        # self.anglelabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+
+        self.previewFrame = tk.Frame(root, bg="green")
+        self.previewFrame.pack(in_=Startpage.frame)
+        self.previewFrame.place(x=btnwidth, height=screenheight, width=screenwidth - btnwidth)
+
+        self.stopEvent = threading.Event()
+        self.thread = threading.Thread(target=self.videoLoop)
+        self.thread.start()
 
     def previewCamera(self):
 
@@ -160,7 +168,7 @@ class Startpage:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
                 if currentFrame is not None:
-                    currentFrame = imutils.resize(currentFrame, width=480 - btnwidth)
+                    currentFrame = imutils.resize(currentFrame, width=screenwidth - btnwidth)
                     image = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
                     image = Image.fromarray(image)
                     image = ImageTk.PhotoImage(image)
@@ -169,7 +177,7 @@ class Startpage:
                         panel = tk.Label(self.previewFrame, image=image)
                         panel.image = image
                         panel.pack(in_=self.previewFrame)
-                        panel.place(relwidth=1.0, relheight=1.0)
+                        panel.place(width=screenwidth-btnwidth, height=screenheight)
                     else:
                         panel.configure(image=image)
                         panel.image = image
