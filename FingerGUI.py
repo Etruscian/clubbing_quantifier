@@ -11,17 +11,18 @@ from imutils.video import VideoStream
 
 # from Old.fingerscanner_working import calculate
 
-screenwidth = 800
-screenheight = 480
+# Declare the root container for the GUI
+root = tk.Tk()
+
+screenwidth = 800#root.winfo_screenwidth()
+screenheight = 600#root.winfo_screenheight()
+
+root.geometry('{}x{}'.format(screenwidth, screenheight))
 
 # Declare button dimensions
 btnheight = int(screenheight / 3)
-btnwidth = 128
+btnwidth = 0.16*screenwidth
 btnpad = 5
-
-# Declare the root container for the GUI
-root = tk.Tk()
-root.geometry('{}x{}'.format(screenwidth, screenheight))
 
 
 # root.attributes('-fullscreen', True)
@@ -81,7 +82,8 @@ class Startpage:
 
         # Create the Preview camera button and place it in the buttonframe
         self.photobutton = tk.Button(self.btnFrame)
-        icon = ImageTk.PhotoImage(file="icons/camera.png")
+        icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)),Image.ANTIALIAS)
+        icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
                                 command=lambda: Startpage.takePicture(self),
@@ -92,7 +94,8 @@ class Startpage:
 
         # Create calculate button and place it in the buttonframe
         self.calculatebutton = tk.Button(self.btnFrame)
-        icon = ImageTk.PhotoImage(file="icons/calc.png")
+        icon = Image.open("./icons/calc.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = ImageTk.PhotoImage(icon)
         self.calculatebutton.config(height=btnheight, width=btnwidth,
                                     image=icon,
                                     command=lambda: Startpage.calculateRatio(self),
@@ -103,7 +106,8 @@ class Startpage:
 
         # Create the shutdown button and place it in the buttonframe
         self.powerbutton = tk.Button(self.btnFrame)
-        icon = ImageTk.PhotoImage(file="icons/power-icon.png")
+        icon = Image.open("./icons/power-icon.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = ImageTk.PhotoImage(icon)
         self.powerbutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
                                 command=lambda: Startpage.closeProgram(self),
@@ -172,7 +176,7 @@ class Startpage:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
                 if currentFrame is not None:
-                    currentFrame = imutils.resize(currentFrame, width=screenwidth - btnwidth)
+                    currentFrame = imutils.resize(currentFrame, width=int(screenwidth - btnwidth))
                     image = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
                     image = Image.fromarray(image)
                     self.image = ImageTk.PhotoImage(image)
