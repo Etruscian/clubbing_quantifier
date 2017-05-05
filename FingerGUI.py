@@ -161,7 +161,7 @@ class Startpage:
 
         self.imagelabel = tk.Canvas(self.previewFrame, width=screenwidth-btnwidth, height=screenheight,
                                bd=0)
-        self.imagelabel.create_image(0, -11, anchor=tk.NW, image=self.image)
+        self.imagelabel.create_image((screenwidth-btnwidth)/2, screenheight/2, anchor=tk.CENTER, image=self.image)
         self.imagelabel.image = self.image
         self.imagelabel.pack(in_=self.previewFrame)
         self.imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
