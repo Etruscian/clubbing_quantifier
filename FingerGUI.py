@@ -14,8 +14,8 @@ from imutils.video import VideoStream
 # Declare the root container for the GUI
 root = tk.Tk()
 
-screenwidth = 800#root.winfo_screenwidth()
-screenheight = 600#root.winfo_screenheight()
+screenwidth = 800  # root.winfo_screenwidth()
+screenheight = 480  # root.winfo_screenheight()
 
 root.geometry('{}x{}'.format(screenwidth, screenheight))
 
@@ -45,12 +45,21 @@ class Startpage:
     resultframe = None
     previewFrame = None
     btnFrame = None
+    ratioframe = None
+    angleframe = None
 
     image = None
     imagelabel = None
-    fingertipline = None
+
+    fingertipmarker = None
+    nailbedmarker = None
+    jointmarker = None
     nailbedline = None
     jointline = None
+
+    fingertippoint = ()
+    nailbedpoint = ()
+    jointpoint = ()
 
     photobutton = None
     calculatebutton = None
@@ -82,7 +91,7 @@ class Startpage:
 
         # Create the Preview camera button and place it in the buttonframe
         self.photobutton = tk.Button(self.btnFrame)
-        icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)),Image.ANTIALIAS)
+        icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
@@ -121,23 +130,15 @@ class Startpage:
         self.resultframe.pack(in_=Startpage.frame)
         self.resultframe.place(x=btnwidth, height=screenheight, width=screenwidth - btnwidth)
 
-        ratioframe = tk.Frame(self.resultframe, bg="red")
-        # ratioframe.pack(in_=self.resultframe)
-        # ratioframe.place(height=0.5*screenheight, width=screenwidth-btnwidth)
+        self.ratioframe = tk.Frame(self.resultframe, bg="red")
 
-        angleframe = tk.Frame(self.resultframe, bg="blue")
-        # angleframe.pack(in_=self.resultframe)
-        # angleframe.place(y=0.5*screenheight, height=0.5*screenheight, width=screenwidth-btnwidth)
+        self.angleframe = tk.Frame(self.resultframe, bg="blue")
 
         # Create result label and place it in the ratio frame
-        self.ratiolabel = tk.Label(ratioframe, text="Ratio")
-        # self.ratiolabel.pack()
-        # self.ratiolabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        self.ratiolabel = tk.Label(self.ratioframe, text="Ratio")
 
         # Create calculating label and place it in the resultframe
-        self.anglelabel = tk.Label(angleframe, text="Angle")
-        # self.anglelabel.pack()
-        # self.anglelabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        self.anglelabel = tk.Label(self.angleframe, text="Angle")
 
         self.previewFrame = tk.Frame(root, bg="green")
         self.previewFrame.pack(in_=Startpage.frame)
@@ -148,24 +149,85 @@ class Startpage:
         self.thread.start()
 
     def setpoint(self, event):
-        if self.fingertipline is None:
-            self.fingertipline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+        if self.fingertipmarker is None:
+            self.fingertippoint = (event.x, event.y)
+            self.fingertipmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
+        elif not self.nailbedpoint:
+            self.nailbedpoint = (event.x, event.y)
+            self.nailbedmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
         elif self.nailbedline is None:
-            self.nailbedline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+            self.nailbedpoint += event.x, event.y
+            print(self.nailbedpoint)
+            self.nailbedline = self.imagelabel.create_line(self.nailbedpoint[0], self.nailbedpoint[1],
+                                                           self.nailbedpoint[2], self.nailbedpoint[3], width=3.0)
+        elif not self.jointpoint:
+            self.jointpoint = (event.x, event.y)
+            self.jointmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
         elif self.jointline is None:
-            self.jointline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+            self.jointpoint += (event.x, event.y)
+            self.jointline = self.imagelabel.create_line(self.jointpoint[0], self.jointpoint[1], self.jointpoint[2],
+                                                         self.jointpoint[3], width=3.0)
+
+    def undo(self):
+        if self.jointline is not None:
+            self.imagelabel.delete(self.jointline)
+            self.jointline = None
+            self.jointpoint = self.jointpoint[0], self.jointpoint[1]
+        elif self.jointpoint:
+            self.jointpoint = ()
+            self.imagelabel.delete(self.jointmarker)
+        elif self.nailbedline is not None:
+            self.imagelabel.delete(self.nailbedline)
+            self.nailbedline = None
+        elif self.nailbedpoint:
+            self.nailbedpoint = ()
+            self.imagelabel.delete(self.nailbedmarker)
+        elif self.fingertipmarker is not None:
+            self.imagelabel.delete(self.fingertipmarker)
+            self.fingertipmarker = None
+            self.fingertippoint = ()
+        else:
+            self.imagelabel.destroy()
+            self.stopEvent = threading.Event()
+            self.thread = threading.Thread(target=self.videoLoop)
+            self.thread.start()
+            icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+            icon = ImageTk.PhotoImage(icon)
+            self.photobutton.config(height=btnheight, width=btnwidth,
+                                    image=icon,
+                                    command=lambda: Startpage.takePicture(self),
+                                    highlightthickness=0, bd=0)
+            self.photobutton.image = icon
+
+    def returntostart(self):
+        self.resultframe.pack_forget()
+        self.resultframe.place_forget()
+        self.previewFrame.pack(in_=Startpage.frame)
+        self.previewFrame.place(x=btnwidth, height=screenheight, width=screenwidth - btnwidth)
+        self.stopEvent = threading.Event()
+        self.thread = threading.Thread(target=self.videoLoop)
+        self.thread.start()
+        self.photobutton.config(command=lambda: Startpage.takePicture(self))
 
     def takePicture(self):
         if self.stopEvent is not None:
             self.stopEvent.set()
 
         self.imagelabel = tk.Canvas(self.previewFrame, width=screenwidth-btnwidth, height=screenheight,
-                               bd=0)
+                                    bd=0)
         self.imagelabel.create_image((screenwidth-btnwidth)/2, screenheight/2, anchor=tk.CENTER, image=self.image)
         self.imagelabel.image = self.image
         self.imagelabel.pack(in_=self.previewFrame)
         self.imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
         self.imagelabel.bind("<Button-1>", self.setpoint)
+
+        icon = Image.open("./icons/undo.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = ImageTk.PhotoImage(icon)
+        self.photobutton.config(height=btnheight, width=btnwidth,
+                                image=icon,
+                                command=lambda: Startpage.undo(self),
+                                highlightthickness=0, bd=0)
+        self.photobutton.image = icon
 
     def videoLoop(self):
 
@@ -214,25 +276,47 @@ class Startpage:
         cancelBtn.place(relheight=0.5, width=66, x=209, y=25)
 
     def calculateRatio(self):
-        if self.stopEvent is not None:
-            self.stopEvent.set()
+        maxjointvalue = max((self.jointpoint[3], self.jointpoint[1]))
+        maxjointindex = self.jointpoint.index(maxjointvalue)
+        maxnailbedvalue = max((self.nailbedpoint[3], self.nailbedpoint[1]))
+        maxnailbedindex = self.nailbedpoint.index(maxnailbedvalue)
 
-        time.sleep(1)
-        fingertipCoordinates = (0.0, 0.0)
-        nailbedCoordinates = (0.0, 0.0)
-        jointCoordinates = (0.0, 0.0)
-        # ratio, fingertipCoordinates, nailbedCoordinates, jointCoordinates = calculate()
+        nailbedlength = np.sqrt((self.nailbedpoint[3] - self.nailbedpoint[1]) ** 2 +
+                                (self.nailbedpoint[2] - self.nailbedpoint[0]) ** 2)
 
-        jointVector = list(tuple(np.subtract(jointCoordinates, nailbedCoordinates)))
+        jointlength = np.sqrt((self.jointpoint[3]-self.jointpoint[1]) ** 2 +
+                              (self.jointpoint[2] - self.jointpoint[0]) ** 2)
+
+        ratio = nailbedlength/jointlength
+
+        jointVector = list(tuple(np.subtract((self.jointpoint[maxjointindex-1], self.jointpoint[maxjointindex]),
+                                             (self.nailbedpoint[maxnailbedindex-1],
+                                              self.nailbedpoint[maxnailbedindex]))))
         lengthJointVector = sum(map(abs, jointVector))
-        fingertipVector = list(tuple(np.subtract(fingertipCoordinates, nailbedCoordinates)))
+        fingertipVector = list(tuple(np.subtract(self.fingertippoint,
+                                                 (self.nailbedpoint[maxnailbedindex-1],
+                                                  self.nailbedpoint[maxnailbedindex]))))
         lengthFingertipVector = sum(map(abs, fingertipVector))
 
         angle = 360 - np.degrees(np.arccos(
             np.dot([x / lengthJointVector for x in jointVector], [x / lengthFingertipVector for x in fingertipVector])))
 
         self.anglelabel["text"] = angle
-        # self.ratiolabel["text"] = ratio
+        self.ratiolabel["text"] = ratio
+
+        self.previewFrame.pack_forget()
+        self.previewFrame.place_forget()
+        self.imagelabel.destroy()
+
+        self.ratioframe.pack(in_=self.resultframe)
+        self.ratioframe.place(height=0.5*screenheight, width=screenwidth-btnwidth)
+        self.angleframe.pack(in_=self.resultframe)
+        self.angleframe.place(y=0.5*screenheight, height=0.5*screenheight, width=screenwidth-btnwidth)
+        self.ratiolabel.pack()
+        self.ratiolabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        self.anglelabel.pack()
+        self.anglelabel.place(width=screenwidth - btnwidth, height=0.5*screenheight)
+        self.photobutton.config(command=lambda: Startpage.returntostart(self))
 
     @staticmethod
     def shutdown():
