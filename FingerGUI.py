@@ -46,6 +46,10 @@ class Startpage:
     btnFrame = None
 
     image = None
+    imagelabel = None
+    fingertipline = None
+    nailbedline = None
+    jointline = None
 
     photobutton = None
     calculatebutton = None
@@ -139,14 +143,25 @@ class Startpage:
         self.thread = threading.Thread(target=self.videoLoop)
         self.thread.start()
 
+    def setpoint(self, event):
+        if self.fingertipline is None:
+            self.fingertipline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+        elif self.nailbedline is None:
+            self.nailbedline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+        elif self.jointline is None:
+            self.jointline = self.imagelabel.create_line(event.x, 0, event.x, screenheight, width=3.0)
+
     def takePicture(self):
         if self.stopEvent is not None:
             self.stopEvent.set()
 
-        imagelabel = tk.Label(self.previewFrame, image=self.image)
-        imagelabel.image = self.image
-        imagelabel.pack(in_=self.previewFrame)
-        imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
+        self.imagelabel = tk.Canvas(self.previewFrame, width=screenwidth-btnwidth, height=screenheight,
+                               bd=0)
+        self.imagelabel.create_image(0, -11, anchor=tk.NW, image=self.image)
+        self.imagelabel.image = self.image
+        self.imagelabel.pack(in_=self.previewFrame)
+        self.imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
+        self.imagelabel.bind("<Button-1>", self.setpoint)
 
     def videoLoop(self):
 
@@ -178,7 +193,6 @@ class Startpage:
         panel.pack_forget()
 
         vs.stop()
-
 
     def closeProgram(self):
         top = tk.Toplevel()
