@@ -293,6 +293,7 @@ class Startpage:
                                              (self.nailbedpoint[maxnailbedindex-1],
                                               self.nailbedpoint[maxnailbedindex]))))
         lengthJointVector = sum(map(abs, jointVector))
+
         fingertipVector = list(tuple(np.subtract(self.fingertippoint,
                                                  (self.nailbedpoint[maxnailbedindex-1],
                                                   self.nailbedpoint[maxnailbedindex]))))
