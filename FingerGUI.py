@@ -25,7 +25,7 @@ btnwidth = 0.16*screenwidth
 btnpad = 5
 
 
-# root.attributes('-fullscreen', True)
+root.attributes('-fullscreen', True)
 
 
 # Declaration of GUI class
@@ -233,7 +233,7 @@ class Startpage:
 
         panel = None
 
-        vs = VideoStream(usePiCamera=False).start()
+        vs = VideoStream(usePiCamera=True).start()
         try:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
