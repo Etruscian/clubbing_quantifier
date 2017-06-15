@@ -25,6 +25,7 @@ btnheight = int(screenheight / 3)
 btnwidth = 0.16*screenwidth
 btnpad = 5
 
+dirPath = os.path.dirname(os.path.realpath(__file__))
 
 root.attributes('-fullscreen', True)
 
@@ -36,7 +37,7 @@ class VingerGUI:
 
     def __init__(self):
         global root
-        self.databasehandler = DatabaseHandler('database/testDB.db')
+        self.databasehandler = DatabaseHandler(dirPath + 'database/testDB.db')
         data = {'event': 'program start'}
         self.databasehandler.adddata('events', **data)
         # Call the start page
@@ -104,7 +105,7 @@ class Startpage:
 
         # Create the Preview camera button and place it in the buttonframe
         self.photobutton = tk.Button(self.btnFrame)
-        icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = Image.open(dirPath +"/icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
@@ -116,7 +117,7 @@ class Startpage:
 
         # Create calculate button and place it in the buttonframe
         self.calculatebutton = tk.Button(self.btnFrame)
-        icon = Image.open("./icons/calc.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = Image.open(dirPath +"/icons/calc.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.calculatebutton.config(height=btnheight, width=btnwidth,
                                     image=icon,
@@ -128,7 +129,7 @@ class Startpage:
 
         # Create the shutdown button and place it in the buttonframe
         self.powerbutton = tk.Button(self.btnFrame)
-        icon = Image.open("./icons/power-icon.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = Image.open(dirPath +"/icons/power-icon.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.powerbutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
@@ -203,7 +204,7 @@ class Startpage:
             self.stopEvent = threading.Event()
             self.thread = threading.Thread(target=self.videoLoop)
             self.thread.start()
-            icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+            icon = Image.open(dirPath +"/icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
             icon = ImageTk.PhotoImage(icon)
             self.photobutton.config(height=btnheight, width=btnwidth,
                                     image=icon,
@@ -219,7 +220,7 @@ class Startpage:
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop)
         self.thread.start()
-        icon = Image.open("./icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = Image.open(dirPath +"/icons/camera.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(command=lambda: Startpage.takePicture(self), image=icon)
         self.photobutton.image = icon
@@ -242,7 +243,7 @@ class Startpage:
         self.imagelabel.place(height=screenheight, width=screenwidth - btnwidth)
         self.imagelabel.bind("<Button-1>", self.setpoint)
 
-        icon = Image.open("./icons/undo.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
+        icon = Image.open(dirPath +"/icons/undo.png").resize((int(btnwidth), int(btnwidth)), Image.ANTIALIAS)
         icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(height=btnheight, width=btnwidth,
                                 image=icon,
