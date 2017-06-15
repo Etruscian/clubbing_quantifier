@@ -37,7 +37,7 @@ class VingerGUI:
 
     def __init__(self):
         global root
-        self.databasehandler = DatabaseHandler(dirPath + 'database/testDB.db')
+        self.databasehandler = DatabaseHandler(dirPath + '/database/testDB.db')
         data = {'event': 'program start'}
         self.databasehandler.adddata('events', **data)
         # Call the start page
