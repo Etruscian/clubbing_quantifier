@@ -165,21 +165,21 @@ class Startpage:
     def setpoint(self, event):
         if self.fingertipmarker is None:
             self.fingertippoint = (event.x, event.y)
-            self.fingertipmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
+            self.fingertipmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif not self.nailbedpoint:
             self.nailbedpoint = (event.x, event.y)
-            self.nailbedmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
+            self.nailbedmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif self.nailbedline is None:
             self.nailbedpoint += event.x, event.y
             self.nailbedline = self.imagelabel.create_line(self.nailbedpoint[0], self.nailbedpoint[1],
-                                                           self.nailbedpoint[2], self.nailbedpoint[3], width=3.0)
+                                                           self.nailbedpoint[2], self.nailbedpoint[3], width=6.0)
         elif not self.jointpoint:
             self.jointpoint = (event.x, event.y)
-            self.jointmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=3.0)
+            self.jointmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif self.jointline is None:
             self.jointpoint += (event.x, event.y)
             self.jointline = self.imagelabel.create_line(self.jointpoint[0], self.jointpoint[1], self.jointpoint[2],
-                                                         self.jointpoint[3], width=3.0)
+                                                         self.jointpoint[3], width=6.0)
 
     def undo(self):
         if self.jointline is not None:
