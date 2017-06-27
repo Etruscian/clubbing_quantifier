@@ -68,9 +68,9 @@ class Startpage:
     nailbedline = None
     jointline = None
 
-    fingertippoint = ()
-    nailbedpoint = ()
-    jointpoint = ()
+    fingertippoint = []
+    nailbedpoint = []
+    jointpoint = []
 
     photobutton = None
     calculatebutton = None
@@ -164,20 +164,25 @@ class Startpage:
 
     def setpoint(self, event):
         if self.fingertipmarker is None:
-            self.fingertippoint = (event.x, event.y)
+            self.fingertippoint.append(event.x)
+            self.fingertippoint.append(event.y)
             self.fingertipmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif not self.nailbedpoint:
-            self.nailbedpoint = (event.x, event.y)
+            self.nailbedpoint.append(event.x)
+            self.nailbedpoint.append(event.y)
             self.nailbedmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif self.nailbedline is None:
-            self.nailbedpoint += event.x, event.y
+            self.nailbedpoint.append(event.x)
+            self.nailbedpoint.append(event.y)
             self.nailbedline = self.imagelabel.create_line(self.nailbedpoint[0], self.nailbedpoint[1],
                                                            self.nailbedpoint[2], self.nailbedpoint[3], width=6.0)
         elif not self.jointpoint:
-            self.jointpoint = (event.x, event.y)
+            self.jointpoint.append(event.x)
+            self.jointpoint.append(event.y)
             self.jointmarker = self.imagelabel.create_oval((event.x, event.y, event.x, event.y), width=6.0)
         elif self.jointline is None:
-            self.jointpoint += (event.x, event.y)
+            self.jointpoint.append(event.x)
+            self.jointpoint.append(event.y)
             self.jointline = self.imagelabel.create_line(self.jointpoint[0], self.jointpoint[1], self.jointpoint[2],
                                                          self.jointpoint[3], width=6.0)
 
@@ -185,20 +190,23 @@ class Startpage:
         if self.jointline is not None:
             self.imagelabel.delete(self.jointline)
             self.jointline = None
-            self.jointpoint = self.jointpoint[0], self.jointpoint[1]
+            self.jointpoint.pop()
+            self.jointpoint.pop()
         elif self.jointpoint:
-            self.jointpoint = ()
+            self.jointpoint = []
             self.imagelabel.delete(self.jointmarker)
         elif self.nailbedline is not None:
             self.imagelabel.delete(self.nailbedline)
             self.nailbedline = None
+            self.nailbedpoint.pop()
+            self.nailbedpoint.pop()
         elif self.nailbedpoint:
-            self.nailbedpoint = ()
+            self.nailbedpoint = []
             self.imagelabel.delete(self.nailbedmarker)
         elif self.fingertipmarker is not None:
             self.imagelabel.delete(self.fingertipmarker)
             self.fingertipmarker = None
-            self.fingertippoint = ()
+            self.fingertippoint = []
         else:
             self.imagelabel.destroy()
             self.stopEvent = threading.Event()
@@ -224,11 +232,11 @@ class Startpage:
         icon = ImageTk.PhotoImage(icon)
         self.photobutton.config(command=lambda: Startpage.takePicture(self), image=icon)
         self.photobutton.image = icon
-        self.fingertippoint = None
+        self.fingertippoint = []
         self.fingertipmarker = None
-        self.nailbedpoint = None
+        self.nailbedpoint = []
         self.nailbedline = None
-        self.jointpoint = None
+        self.jointpoint = []
         self.jointline = None
 
     def takePicture(self):
@@ -310,11 +318,13 @@ class Startpage:
         data = {'event': 'calculate'}
         self.databasehandler.adddata('events', **data)
 
-        maxjointvalue = max((self.jointpoint[3], self.jointpoint[1]))
+        # Finding the maximum values in the y direction to make sure the points are correct (origin is left upper corner)
+        maxjointvalue = min((self.jointpoint[3], self.jointpoint[1]))
         maxjointindex = self.jointpoint.index(maxjointvalue)
-        maxnailbedvalue = max((self.nailbedpoint[3], self.nailbedpoint[1]))
+        maxnailbedvalue = min((self.nailbedpoint[3], self.nailbedpoint[1]))
         maxnailbedindex = self.nailbedpoint.index(maxnailbedvalue)
 
+        # Ratio calculations
         nailbedlength = np.sqrt((self.nailbedpoint[3] - self.nailbedpoint[1]) ** 2 +
                                 (self.nailbedpoint[2] - self.nailbedpoint[0]) ** 2)
 
@@ -323,18 +333,15 @@ class Startpage:
 
         ratio = nailbedlength/jointlength
 
-        jointVector = list(tuple(np.subtract((self.jointpoint[maxjointindex-1], self.jointpoint[maxjointindex]),
-                                             (self.nailbedpoint[maxnailbedindex-1],
-                                              self.nailbedpoint[maxnailbedindex]))))
-        lengthJointVector = sum(map(abs, jointVector))
+        # Angle calculations
+        angle = 180 + \
+                np.sign(self.fingertippoint[1] - self.nailbedpoint[maxnailbedindex])*\
+                (np.degrees(np.arctan(abs(self.fingertippoint[1]-self.nailbedpoint[maxnailbedindex])/ \
+                                      abs(self.fingertippoint[0]-self.nailbedpoint[maxnailbedindex-1])))) + \
+                np.sign(self.jointpoint[maxjointindex] - self.nailbedpoint[maxnailbedindex]) * \
+                (np.degrees(np.arctan(abs(self.nailbedpoint[maxnailbedindex] - self.jointpoint[maxjointindex])/ \
+                                      abs(self.nailbedpoint[maxnailbedindex-1] - self.jointpoint[maxjointindex-1]))))
 
-        fingertipVector = list(tuple(np.subtract(self.fingertippoint,
-                                                 (self.nailbedpoint[maxnailbedindex-1],
-                                                  self.nailbedpoint[maxnailbedindex]))))
-        lengthFingertipVector = sum(map(abs, fingertipVector))
-
-        angle = 360 - np.degrees(np.arccos(
-            np.dot([x / lengthJointVector for x in jointVector], [x / lengthFingertipVector for x in fingertipVector])))
 
         self.anglelabel["text"] = angle
         self.ratiolabel["text"] = ratio
@@ -344,7 +351,7 @@ class Startpage:
         self.databasehandler.adddata('events', **data)
 
         output = io.BytesIO()
-        self.rawimage.save(output, format='JPEG')
+        # self.rawimage.save(output, format='JPEG')
 
         data['image'] = output.getvalue()
         data['ratio'] = ratio
