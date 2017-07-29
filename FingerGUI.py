@@ -351,7 +351,7 @@ class Startpage:
         self.databasehandler.adddata('events', **data)
 
         output = io.BytesIO()
-        # self.rawimage.save(output, format='JPEG')
+        self.rawimage.save(output, format='JPEG')
 
         data['image'] = output.getvalue()
         data['ratio'] = ratio
