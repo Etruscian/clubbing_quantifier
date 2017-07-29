@@ -266,7 +266,7 @@ class Startpage:
 
         panel = None
 
-        vs = VideoStream(usePiCamera=True).start()
+        vs = VideoStream(usePiCamera=False).start()
         try:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
@@ -350,10 +350,7 @@ class Startpage:
 
         self.databasehandler.adddata('events', **data)
 
-        output = io.BytesIO()
-        self.rawimage.save(output, format='JPEG')
-
-        data['image'] = output.getvalue()
+        data['image'] = self.rawimage.tobytes()
         data['ratio'] = ratio
         data['angle'] = angle
         data['fingertip'] = str(self.fingertippoint)
