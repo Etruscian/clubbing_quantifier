@@ -266,7 +266,7 @@ class Startpage:
 
         panel = None
 
-        vs = VideoStream(usePiCamera=False).start()
+        vs = VideoStream(usePiCamera=True).start()
         try:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
