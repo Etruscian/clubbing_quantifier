@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image, ImageTk
 from imutils.video import VideoStream
 from DatabaseConnection import DatabaseHandler
+import RPi.GPIO as GPIO
 
 # from Old.fingerscanner_working import calculate
 
@@ -48,6 +49,8 @@ class VingerGUI:
 
 
 class Startpage:
+
+    led = 40
 
     databasehandler = None
 
@@ -92,6 +95,10 @@ class Startpage:
 
         # Get databasehandler and store it inside class
         self.databasehandler = databasehandler
+
+        # Initialize led
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self.led, GPIO.OUT)
 
         # Create the background frame, make it full screen and set its color to white
         self.frame = tk.Frame(root, bg="white")
@@ -266,7 +273,13 @@ class Startpage:
 
         panel = None
 
+        # Start camera
         vs = VideoStream(usePiCamera=True).start()
+
+        # Turn on flash
+        GPIO.output(self.led,True)
+
+        # Video loop
         try:
             while not self.stopEvent.is_set():
                 currentFrame = vs.read()
@@ -289,6 +302,9 @@ class Startpage:
             print("RuntimeError")
             data = {'event': e}
             self.databasehandler.adddata('events', **data)
+
+        # Turn off flash
+        GPIO.output(self.led,False)
 
         panel.place_forget()
         panel.pack_forget()
@@ -377,10 +393,12 @@ class Startpage:
 
     @staticmethod
     def shutdown():
+        GPIO.cleanup()
         os.system('sudo shutdown now -h')
 
     @staticmethod
     def reboot():
+        GPIO.cleanup()
         os.system('sudo reboot')
 
 
